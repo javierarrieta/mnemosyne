@@ -1,0 +1,56 @@
+name: Sync Upstream Tags
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-tags:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Add upstream remote
+        run: git remote add upstream https://github.com/AxDSan/mnemosyne.git
+
+      - name: Fetch upstream tags
+        run: git fetch upstream --tags
+
+      - name: Push new tags to fork
+        run: |
+          upstream_tags=$(git ls-remote --tags upstream \
+            | awk '{print $2}' \
+            | sed 's|refs/tags/||' \
+            | grep -v '\^{}')
+          fork_tags=$(git ls-remote --tags origin \
+            | awk '{print $2}' \
+            | sed 's|refs/tags/||' \
+            | grep -v '\^{}')
+
+          new_tags=()
+          for tag in $upstream_tags; do
+              if ! echo "$fork_tags" | grep -qx "$tag"; then
+                  new_tags+=("$tag")
+              fi
+          done
+
+          if [ ${#new_tags[@]} -eq 0 ]; then
+              echo "No new tags to sync."
+              exit 0
+          fi
+
+          echo "New tags to sync:"
+          printf '  - %s\n' "${new_tags[@]}"
+
+          for tag in "${new_tags[@]}"; do
+              echo "Pushing tag: $tag"
+              git push origin "$tag"
+          done

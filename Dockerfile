@@ -25,11 +25,13 @@ FROM python:3.11-slim
 
 LABEL org.opencontainers.image.title="Mnemosyne MCP Server"
 LABEL org.opencontainers.image.description="Universal memory layer MCP server for any AI agent"
-LABEL org.opencontainers.image.source="https://github.com/AxDSan/mnemosyne"
+LABEL org.opencontainers.image.source="https://github.com/javierarrieta/mnemosyne"
 LABEL org.opencontainers.image.licenses="MIT"
 
 # Install Mnemosyne with MCP + SSE extras
-RUN pip install --no-cache-dir "mnemosyne-memory[mcp]"
+WORKDIR /app
+COPY . .
+RUN pip install --no-cache-dir ".[mcp]"
 
 # Default data directory (overridable via MNEMOSYNE_DATA_DIR env var)
 ENV MNEMOSYNE_DATA_DIR=/data
