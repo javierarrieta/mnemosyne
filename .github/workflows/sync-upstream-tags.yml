@@ -5,6 +5,13 @@ on:
     - cron: "0 6 * * *"
   workflow_dispatch:
 
+# The tags pointed to releases contain .github/workflows/*, so pushing them
+# with the auto-issued GITHUB_TOKEN is rejected server-side ("refusing to allow
+# a GitHub App to create or update workflow"), and even when a push succeeds,
+# GITHUB_TOKEN-originated push events do not trigger other workflows. Both
+# problems are solved by authenticating with a fine-grained PAT that has
+# "Contents: read and write" + "Workflows: read and write" on this repo, stored
+# as the SYNC_GIT_TOKEN secret. PAT-originated pushes DO trigger workflows.
 permissions:
   contents: write
 
@@ -16,7 +23,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.SYNC_GIT_TOKEN }}
 
       - name: Add upstream remote
         run: git remote add upstream https://github.com/AxDSan/mnemosyne.git
