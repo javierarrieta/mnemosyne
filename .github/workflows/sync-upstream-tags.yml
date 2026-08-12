@@ -26,14 +26,17 @@ jobs:
 
       - name: Push new tags to fork
         run: |
+          # grep -v exits 1 when its input is empty (e.g. origin has no tags
+          # yet), which under set -e -o pipefail aborts the whole step. The
+          # || true guards are required, not optional.
           upstream_tags=$(git ls-remote --tags upstream \
             | awk '{print $2}' \
             | sed 's|refs/tags/||' \
-            | grep -v '\^{}')
+            | grep -v '\^{}') || true
           fork_tags=$(git ls-remote --tags origin \
             | awk '{print $2}' \
             | sed 's|refs/tags/||' \
-            | grep -v '\^{}')
+            | grep -v '\^{}') || true
 
           new_tags=()
           for tag in $upstream_tags; do
