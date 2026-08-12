@@ -5,8 +5,13 @@ on:
     - cron: "0 6 * * *"
   workflow_dispatch:
 
+# contents: write  -> push the synced tags to the fork
+# workflows: write -> tags point to commits containing .github/workflows/*;
+#                     GitHub rejects a GitHub-App token (GITHUB_TOKEN) that
+#                     would otherwise touch workflow files without this.
 permissions:
   contents: write
+  workflows: write
 
 jobs:
   sync-tags:
