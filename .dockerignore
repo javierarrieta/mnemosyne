@@ -11,4 +11,5 @@ docs
 tools
 assets
 *.md
+!README.md
 !.dockerignore
